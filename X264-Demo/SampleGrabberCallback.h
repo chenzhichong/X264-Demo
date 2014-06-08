@@ -22,7 +22,7 @@ const wchar_t CAPTURE_DEVICE_VEDIO_PIN_IN_NAME[][64] = {L"Video Tuner In", L"Ä£Ä
 const wchar_t CAPTURE_DEVICE_VEDIO_PIN_OUT_NAME[][64] = {L"Capture Out", L"²¶»ñ"};
 const wchar_t CROSSBAR_DEVICE_PIN_OUT_NAME[][64] = {L"0: Video Decoder Out", L"0: Video Decoder Out"};
 //Éè±¸ºó
-const int WHICH_DEVICE = 0;
+const int WHICH_DEVICE = 1;
 //GUID
 // SMI Grabber Device
 DEFINE_GUID(CLSID_VideoCaptureSources,

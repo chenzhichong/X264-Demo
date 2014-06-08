@@ -449,7 +449,17 @@ HRESULT CCaptureImage::SetSampleGrabberProperty()
 	AM_MEDIA_TYPE mt;
 	ZeroMemory(&mt, sizeof(mt));
 	mt.majortype = MEDIATYPE_Video;
-	mt.subtype = MEDIASUBTYPE_UYVY;
+	switch (WHICH_DEVICE)
+	{
+	case 0:
+		mt.subtype = MEDIASUBTYPE_UYVY;
+		break;
+	case 1:
+		mt.subtype = MEDIASUBTYPE_YUY2;
+		break;
+	default:
+		break;
+	}
 
 	hr = m_pSampGrabber->SetMediaType(&mt);
 	if (FAILED(hr))
