@@ -12,8 +12,8 @@
 #define new DEBUG_NEW
 #endif
 
-#define VIDEO_HEIGHT 720
-#define VIDEO_WIDTH 576
+#define VIDEO_HEIGHT 576
+#define VIDEO_WIDTH 720
 // CAboutDlg dialog used for App About
 
 class CAboutDlg : public CDialogEx

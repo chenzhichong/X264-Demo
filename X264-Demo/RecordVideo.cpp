@@ -78,6 +78,20 @@ void CRecordVideo::InsertVideoData( const char *pData, int length, int FrameType
 
 		if (EN_FrameType::I_FRAME==FrameType||!m_BeginingFlag)
 		{
+			switch (FrameType)
+			{
+			case EN_FrameType::I_FRAME:
+				LOG_INFO("I_FRAME");
+				break;
+			case EN_FrameType::B_FRAME:
+				LOG_INFO("B_FRAME");
+				break;
+			case EN_FrameType::P_FRAME:
+				LOG_INFO("P_FRAME");
+				break;
+			default:
+				break;
+			}
 			m_BeginingFlag=FALSE;
 			fwrite(pData,length,1,m_pFile);
 		}

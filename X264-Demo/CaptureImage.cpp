@@ -35,34 +35,46 @@ int CCaptureImage::Initialize( HWND hwnd, int Height, int Width, IMAGE_CALLBACK 
 	hr = CoCreateInstance(CLSID_FilterGraph,NULL,CLSCTX_INPROC_SERVER,
 		IID_IGraphBuilder,(LPVOID*)&m_pGraphBuilder);
 	if(FAILED(hr))
+	{
+		LOG_ERROR("Create the filter graph failed!");
 		return hr;
+	}
 
 	//Create the capture graph builder
 	hr = CoCreateInstance(CLSID_CaptureGraphBuilder2,NULL,CLSCTX_INPROC_SERVER,
 		IID_ICaptureGraphBuilder2,(LPVOID*)&m_pCaptureGB);
 	if(FAILED(hr))
+	{
+		LOG_ERROR("Create the capture graph builder failed!");
 		return hr;
+	}
 
 	//Obtain interfaces for media control and Video Window
 	hr = m_pGraphBuilder->QueryInterface(IID_IMediaControl,(LPVOID*)&m_pMediaControl);
 	if(FAILED(hr))
+	{
+		LOG_ERROR("Obtain interfaces for media control and Video Window failed!");
 		return hr;
+	}
 
 	m_pCaptureGB->SetFiltergraph(m_pGraphBuilder);
 	if(FAILED(hr))
+	{
+		LOG_ERROR("Set filter graph failed!");
 		return hr;
+	}
 
 	//add Capture devcie 
 	hr = CreateFilterByName(CAPTURE_DEVICE_NAME[WHICH_DEVICE], CLSID_VideoCaptureSources, &m_pGrabberDevFilter);
 	if(FAILED(hr))
 	{
-		printf("¥¥Ω®%ls ß∞‹£°\n", CAPTURE_DEVICE_NAME[WHICH_DEVICE]);
+		LOG_ERROR("¥¥Ω®" << CAPTURE_DEVICE_NAME[WHICH_DEVICE] << " ß∞‹£°");
 		return hr;
 	}
 	hr = m_pGraphBuilder->AddFilter(m_pGrabberDevFilter, CAPTURE_DEVICE_NAME[WHICH_DEVICE]);
 	if(FAILED(hr))
 	{
-		printf("ÃÌº”%ls ß∞‹£°\n", CAPTURE_DEVICE_NAME[WHICH_DEVICE]);
+		LOG_ERROR("ÃÌº”" << CAPTURE_DEVICE_NAME[WHICH_DEVICE] << " ß∞‹£°");
 		return hr;
 	}
 
@@ -70,13 +82,13 @@ int CCaptureImage::Initialize( HWND hwnd, int Height, int Width, IMAGE_CALLBACK 
 	hr = CreateFilterByName(CROSSBAR_DEVICE_NAME[WHICH_DEVICE], CLSID_WDM, &m_pCrossbarFilter);
 	if(FAILED(hr))
 	{
-		printf("¥¥Ω®%ls ß∞‹£°\n", CROSSBAR_DEVICE_NAME[WHICH_DEVICE]);
+		LOG_ERROR("¥¥Ω®" << CROSSBAR_DEVICE_NAME[WHICH_DEVICE] << " ß∞‹£°");
 		return hr;
 	}
 	hr = m_pGraphBuilder->AddFilter(m_pCrossbarFilter, CROSSBAR_DEVICE_NAME[WHICH_DEVICE]);
 	if(FAILED(hr))
 	{
-		printf("ÃÌº”%ls ß∞‹£°\n");
+		LOG_ERROR("ÃÌº”" << CROSSBAR_DEVICE_NAME[WHICH_DEVICE] << " ß∞‹£°");
 		return hr;
 	}
 
@@ -85,26 +97,26 @@ int CCaptureImage::Initialize( HWND hwnd, int Height, int Width, IMAGE_CALLBACK 
 		IID_IBaseFilter, (LPVOID*)&m_pSampGrabberFilter);
 	if(FAILED(hr))
 	{
-		printf("¥¥Ω®SampleGrabber Filter ß∞‹£°\n");
+		LOG_ERROR("¥¥Ω®SampleGrabber Filter ß∞‹£°");
 		return hr;
 	}
 	hr = m_pGraphBuilder->AddFilter(m_pSampGrabberFilter, L"SampleGrabber");
 	if(FAILED(hr))
 	{
-		printf("ÃÌº”SampleGrabber Filter ß∞‹£°\n");
+		LOG_ERROR("ÃÌº”SampleGrabber Filter ß∞‹£°");
 		return hr;
 	} 
 	hr = m_pSampGrabberFilter->QueryInterface(IID_ISampleGrabber, (LPVOID*)&m_pSampGrabber);
 	if (FAILED(hr))
 	{
-		printf("≤È—ØISampleGrabberΩ”ø⁄ ß∞‹£°\n");
+		LOG_ERROR("≤È—ØISampleGrabberΩ”ø⁄ ß∞‹£°");
 		return hr;
 	}
 	//set mediatype
 	hr = SetSampleGrabberProperty();
 	if (FAILED(hr))
 	{
-		printf("…Ë÷√SampleGrabber Ù–‘ ß∞‹£°\n");
+		LOG_ERROR("…Ë÷√SampleGrabber Ù–‘ ß∞‹£°");
 		return hr;
 	}
 
@@ -113,13 +125,13 @@ int CCaptureImage::Initialize( HWND hwnd, int Height, int Width, IMAGE_CALLBACK 
 		IID_IBaseFilter, (LPVOID*)&m_pRenderFilter);
 	if(FAILED(hr))
 	{
-		printf("¥¥Ω®Null Renderer Filter ß∞‹£°\n");
+		LOG_ERROR("¥¥Ω®Null Renderer Filter ß∞‹£°");
 		return hr;
 	}
 	hr = m_pGraphBuilder->AddFilter(m_pRenderFilter, L"Null Renderer");
 	if(FAILED(hr))
 	{
-		printf("ÃÌº”Null Renderer Filter ß∞‹£°\n");
+		LOG_ERROR("ÃÌº”Null Renderer Filter ß∞‹£°");
 		return hr;
 	}
 
@@ -130,18 +142,19 @@ int CCaptureImage::Initialize( HWND hwnd, int Height, int Width, IMAGE_CALLBACK 
 	if(FAILED(hr))
 	{
 		printf("GetPin[%ls:%ls] ß∞‹£°\n", CROSSBAR_DEVICE_NAME[WHICH_DEVICE], CROSSBAR_DEVICE_PIN_OUT_NAME[WHICH_DEVICE]);
+		LOG_ERROR("GetPin[" << CROSSBAR_DEVICE_NAME[WHICH_DEVICE] << ":" << CROSSBAR_DEVICE_PIN_OUT_NAME[WHICH_DEVICE] << "] ß∞‹£°");
 		return hr;
 	}
 	hr = GetPin(m_pGrabberDevFilter, CAPTURE_DEVICE_VEDIO_PIN_IN_NAME[WHICH_DEVICE], &pPinIn);
 	if(FAILED(hr))
 	{
-		printf("GetPin[%ls:%ls] ß∞‹£°\n", CAPTURE_DEVICE_NAME[WHICH_DEVICE], CAPTURE_DEVICE_VEDIO_PIN_IN_NAME[WHICH_DEVICE]);
+		LOG_ERROR("GetPin[" << CAPTURE_DEVICE_NAME[WHICH_DEVICE] << ":" << CAPTURE_DEVICE_VEDIO_PIN_IN_NAME[WHICH_DEVICE] << "] ß∞‹£°");
 		return hr;
 	}
 	hr = m_pGraphBuilder->ConnectDirect(pPinOut, pPinIn, NULL);
 	if(FAILED(hr))
 	{
-		printf("¡¨Ω” ß∞‹£°\n");
+		LOG_ERROR("¡¨Ω” ß∞‹£°");
 		SafeRelease(&pPinOut);
 		SafeRelease(&pPinIn);
 		return hr;
@@ -153,19 +166,19 @@ int CCaptureImage::Initialize( HWND hwnd, int Height, int Width, IMAGE_CALLBACK 
 	hr = GetPin(m_pGrabberDevFilter,CAPTURE_DEVICE_VEDIO_PIN_OUT_NAME[WHICH_DEVICE], &pPinOut);
 	if(FAILED(hr))
 	{
-		printf("GetPin[%ls:%ls] ß∞‹£°\n", CAPTURE_DEVICE_NAME[WHICH_DEVICE], CAPTURE_DEVICE_VEDIO_PIN_OUT_NAME[WHICH_DEVICE]);
+		LOG_ERROR("GetPin[" << CAPTURE_DEVICE_NAME[WHICH_DEVICE] << ":" << CAPTURE_DEVICE_VEDIO_PIN_IN_NAME[WHICH_DEVICE] << "] ß∞‹£°");
 		return hr;
 	}
 	hr = GetPin(m_pSampGrabberFilter, L"Input", &pPinIn);
 	if(FAILED(hr))
 	{
-		printf("GetPin[%ls:%ls] ß∞‹£°\n", L"SampleGrabber", L"Input");
+		LOG_ERROR("GetPin[SampleGrabber:Input] ß∞‹£°");
 		return hr;
 	}
 	hr = m_pGraphBuilder->ConnectDirect(pPinOut, pPinIn, NULL);
 	if(FAILED(hr))
 	{
-		printf("¡¨Ω” ß∞‹£°\n");
+		LOG_ERROR("¡¨Ω” ß∞‹£°");
 		SafeRelease(&pPinOut);
 		SafeRelease(&pPinIn);
 		return hr;
@@ -177,19 +190,19 @@ int CCaptureImage::Initialize( HWND hwnd, int Height, int Width, IMAGE_CALLBACK 
 	hr = GetPin(m_pSampGrabberFilter, L"Output", &pPinOut);
 	if(FAILED(hr))
 	{
-		printf("GetPin[%ls:%ls] ß∞‹£°\n", L"SampleGrabber", L"Output");
+		LOG_ERROR("GetPin[SampleGrabber:Output] ß∞‹£°");
 		return hr;
 	}
 	hr = GetPin(m_pRenderFilter, L"In", &pPinIn);
 	if(FAILED(hr))
 	{
-		printf("GetPin[%ls:%ls] ß∞‹£°\n", L"Null Render", L"In");
+		LOG_ERROR("GetPin[Null Render:In] ß∞‹£°");
 		return hr;
 	}
 	hr = m_pGraphBuilder->ConnectDirect(pPinOut, pPinIn, NULL);
 	if(FAILED(hr))
 	{
-		printf("¡¨Ω” ß∞‹£°\n");
+		LOG_ERROR("¡¨Ω” ß∞‹£°");
 		SafeRelease(&pPinOut);
 		SafeRelease(&pPinIn);
 		return hr;
@@ -244,21 +257,21 @@ int CCaptureImage::Initialize( HWND hwnd, int Height, int Width, IMAGE_CALLBACK 
 	hr = SetGrabberProperty();
 	if (FAILED(hr))
 	{
-		printf("…Ë÷√Grabber Ù–‘ ß∞‹£°\n");
+		LOG_ERROR("…Ë÷√Grabber Ù–‘ ß∞‹£°");
 		return hr;
 	}
 	//set mediatype
 	hr = SetCrossbarProperty();
 	if (FAILED(hr))
 	{
-		printf("…Ë÷√Crossbar Ù–‘ ß∞‹£°\n");
+		LOG_ERROR("…Ë÷√Crossbar Ù–‘ ß∞‹£°");
 		return hr;
 	}
 	//run
 	hr = m_pMediaControl->Run();
 	if(FAILED(hr))
 	{
-		printf("‘À–– ß∞‹£°\n");
+		LOG_ERROR("‘À–– ß∞‹£°");
 		return hr;
 	}
 	m_InitFlag = TRUE;
@@ -332,9 +345,10 @@ HRESULT CCaptureImage::CreateFilterByName(PCWSTR pszFilterName, const GUID& clsi
 							(void**)ppFilter);
 						if (FAILED(hr))
 						{
-							printf("Can't bind moniker to filter object.\n");
+							LOG_ERROR("Can't bind moniker to filter object.");
 						}
 						printf("Success bind moniker [%ls] to filter object.\n", pszFilterName);
+						LOG_DEBUG("Success bind moniker [" << pszFilterName << "] to filter object.");
 						pPropBag->Release();
 						pMoniker->Release();
 						pEnumCat->Release();
@@ -365,7 +379,7 @@ HRESULT CCaptureImage::GetPin(IBaseFilter* pFilter, PCWSTR pszPinName, IPin** pp
 	hr = pFilter->EnumPins(&pEnum);
 	if (FAILED(hr))
 	{
-		printf("Can't enumerate pins.");
+		LOG_ERROR("Can't enumerate pins.");
 		return hr;
 	}
 
@@ -395,7 +409,7 @@ HRESULT CCaptureImage::SaveGraphToFile(WCHAR *wszPath)
 	hr = SaveGraphFile(m_pGraphBuilder, wszPath);
 	if (FAILED(hr))
 	{
-		printf("±£¥ÊGraph ß∞‹£°");
+		LOG_ERROR("±£¥ÊGraph ß∞‹£°");
 		return hr;
 	}
 	return hr;
@@ -422,7 +436,7 @@ HRESULT CCaptureImage::SetGrabberProperty()
 	hr = ShowFilterPropertyPage(m_pGrabberDevFilter, NULL);
 	if (FAILED(hr))
 	{
-		printf("œ‘ æGrabberDevFilter Ù–‘∂‘ª∞øÚ ß∞‹£°\n");
+		LOG_ERROR("œ‘ æGrabberDevFilter Ù–‘∂‘ª∞øÚ ß∞‹£°");
 		return hr;
 	}
 	return hr;
@@ -434,7 +448,7 @@ HRESULT CCaptureImage::SetCrossbarProperty()
 	hr = ShowFilterPropertyPage(m_pCrossbarFilter, NULL);
 	if (FAILED(hr))
 	{
-		printf("œ‘ æCrossbar Ù–‘∂‘ª∞øÚ ß∞‹£°\n");
+		LOG_ERROR("œ‘ æCrossbar Ù–‘∂‘ª∞øÚ ß∞‹£°");
 		return hr;
 	}
 	return hr;
@@ -464,19 +478,19 @@ HRESULT CCaptureImage::SetSampleGrabberProperty()
 	hr = m_pSampGrabber->SetMediaType(&mt);
 	if (FAILED(hr))
 	{
-		printf("…Ë÷√sample∏Ò Ω ß∞‹£°");
+		LOG_ERROR("…Ë÷√sample∏Ò Ω ß∞‹£°");
 		return hr;
 	}
 	hr = m_pSampGrabber->SetBufferSamples(TRUE);
 	if (FAILED(hr))
 	{
-		printf("…Ë÷√buffer ß∞‹£°");
+		LOG_ERROR("…Ë…Ë÷√buffer ß∞‹£°");
 		return hr;
 	}
 	hr = m_pSampGrabber->SetCallback(pSampleGrabberCB, 1);
 	if (FAILED(hr))
 	{
-		printf("…Ë÷√callback ß∞‹£°");
+		LOG_ERROR("…Ë÷√callback ß∞‹£°");
 		return hr;
 	}
 	return hr;
